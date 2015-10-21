@@ -14,13 +14,13 @@ const PLUGIN_NAME = 'gulp-typson';
  */
 function gulpTypson(opts) {
     opts = opts || {};
+    opts.expandAndKeepMainType = opts.hasOwnProperty('expandAndKeepMainType') ? opts.expandAndKeepMainType : true;
     opts.getMainType = opts.getMainType || function(filepath) {
         var mainType = path.basename(filepath, path.extname(filepath));
         if (mainType.indexOf('.') >= 0) {
             mainType = mainType.substr(0, mainType.indexOf('.'));
         }
         mainType = mainType[0].toUpperCase() + mainType.slice(1);
-        //mainType = mainType + '.' + mainType;
         return mainType;
     };
 
@@ -36,8 +36,11 @@ function gulpTypson(opts) {
             var p = file.path.replace(/\\/g, '/');
             var mainType = opts.getMainType(file.path);
             typson.schema(p, mainType).done(function(schema) {
-                schema = new Jsonator(schema).getExpandedSchema();
-                delete schema.definitions;
+                if (opts.expandAndKeepMainType) {
+                    schema = new Jsonator(schema).getExpandedSchema();
+                    delete schema.definitions;
+                }
+
                 // avoid double-escaping
                 file.contents = new Buffer(JSON.stringify(schema, null, 2).replace(/\\\\/g, '\\').replace(/\\"/g, '"'));
                 file.path = gutil.replaceExtension(file.path, '.json');
