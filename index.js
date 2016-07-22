@@ -53,4 +53,6 @@ function gulpTypson(opts) {
     return stream;
 };
 
+gulpTypson.typson = typson;
+
 module.exports = gulpTypson;
